@@ -21,6 +21,9 @@ WORKDIR /etc
 RUN git clone https://luajit.org/git/luajit.git
 WORKDIR /etc/luajit
 RUN make && make install
+RUN ldconfig
+
+
 
 FROM base AS snort
 # use build arg here instead of base (multi stage dockerfile)
