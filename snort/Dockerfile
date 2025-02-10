@@ -28,6 +28,7 @@ RUN ldconfig
 FROM base AS snort
 # use build arg here instead of base (multi stage dockerfile)
 ARG SNORT_VERSION
+ARG OINKCODE
 
 # fetch snort binaries
 WORKDIR /etc
@@ -35,8 +36,21 @@ RUN curl -fL -o /tmp/snort.zip "https://github.com/snort3/snort3/archive/refs/ta
 RUN mkdir /tmp/snort_package && mkdir /etc/snort && unzip /tmp/snort.zip -d /tmp/snort_package
 RUN cd /tmp/snort_package/snort3-${SNORT_VERSION} && ./configure_cmake.sh --prefix=/etc/snort 
 RUN cd /tmp/snort_package/snort3-${SNORT_VERSION}/build && make -j $(nproc) && make install
+# link snort to be able to run it directly
+RUN ln -s /etc/snort/bin/snort /usr/local/bin/snort
+
+# setup pulled pork for rules
+WORKDIR /etc/snort
+RUN git clone https://github.com/shirkdog/pulledpork3.git
+RUN python3 -m pip install -r pulledpork3/requirements.txt
+COPY ./pulledpork.conf /etc/snort/pulledpork3/etc/pulledpork.conf
+RUN mkdir -p /etc/snort/etc/rules /etc/snort/etc/so_rules /etc/snort/etc/lists
+# add oinkcode and execute pulledpork
+ENV OINKCODE=${OINKCODE}
+RUN echo "oinkcode = ${OINKCODE}" >> /etc/snort/pulledpork3/etc/pulledpork.conf
+RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
+ENV OINKCODE=empty
 
 WORKDIR /usr/local/bin
-RUN ln -s /etc/snort/bin/snort /usr/local/bin/snort
 CMD ["tail", "-f", "/dev/null"]
 

@@ -107,6 +107,7 @@ jobs:
           tags: ${{ env.TAGS }}
           build-args: | 
             SNORT_VERSION=${{ env.RELEASE_VERSION }}
+            OINKCODE=${{ secrets.OINKCODE }}
 
       - name: Update repo description
         uses: peter-evans/dockerhub-description@v3
