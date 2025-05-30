@@ -1,7 +1,14 @@
 FROM ubuntu:latest AS base
 
+
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt update -y && apt upgrade -y
-RUN apt-get -y install vim python3-pip
+RUN apt-get install -y --no-install-recommends \
+        vim \
+        python3-pip
+
+
 RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED 
 
 
@@ -18,11 +25,10 @@ RUN ./bootstrap && ./configure && make install
 RUN ldconfig
 
 WORKDIR /etc
-RUN git clone https://luajit.org/git/luajit.git
-WORKDIR /etc/luajit
+RUN git clone https://github.com/LuaJIT/LuaJIT.git
+WORKDIR /etc/LuaJIT
 RUN make && make install
 RUN ldconfig
-
 
 
 FROM base AS snort
@@ -34,10 +40,18 @@ ARG OINKCODE
 WORKDIR /etc
 RUN curl -fL -o /tmp/snort.zip "https://github.com/snort3/snort3/archive/refs/tags/${SNORT_VERSION}.zip"
 RUN mkdir /tmp/snort_package && mkdir /etc/snort && unzip /tmp/snort.zip -d /tmp/snort_package
-RUN cd /tmp/snort_package/snort3-${SNORT_VERSION} && ./configure_cmake.sh --prefix=/etc/snort 
-RUN cd /tmp/snort_package/snort3-${SNORT_VERSION}/build && make -j $(nproc) && make install
+WORKDIR /tmp/snort_package/snort3-${SNORT_VERSION}
+RUN ./configure_cmake.sh --prefix=/etc/snort 
+RUN cd ./build && make -j $(nproc) && make install
 # link snort to be able to run it directly
 RUN ln -s /etc/snort/bin/snort /usr/local/bin/snort
+
+# install snort3 extras
+# installs it into /usr/local/snort/lib per default
+RUN curl -fL -o /tmp/snort_extras.zip "https://github.com/snort3/snort3_extra/archive/refs/tags/${SNORT_VERSION}.zip"
+RUN unzip /tmp/snort_extras.zip -d /tmp
+ENV PKG_CONFIG_PATH=/etc/snort/lib/pkgconfig
+RUN cd /tmp/snort3_extra-${SNORT_VERSION} &&./configure_cmake.sh && cd ./build && make && make install
 
 # setup pulled pork for rules
 WORKDIR /etc/snort
@@ -50,6 +64,8 @@ ENV OINKCODE=${OINKCODE}
 RUN echo "oinkcode = ${OINKCODE}" >> /etc/snort/pulledpork3/etc/pulledpork.conf
 RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
 ENV OINKCODE=empty
+
+
 
 WORKDIR /usr/local/bin
 CMD ["tail", "-f", "/dev/null"]
