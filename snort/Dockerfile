@@ -9,7 +9,7 @@ RUN apt-get install -y --no-install-recommends \
         python3-pip
 
 
-RUN rm /usr/lib/python3.12/EXTERNALLY-MANAGED 
+RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED 
 
 
 RUN apt-get install -y build-essential bison flex libpcap-dev libpcre3 libpcre3-dev \
