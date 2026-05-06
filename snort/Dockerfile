@@ -12,10 +12,10 @@ RUN apt-get install -y --no-install-recommends \
 RUN rm /usr/lib/python3.14/EXTERNALLY-MANAGED 
 
 
-RUN apt-get install -y build-essential bison flex libpcap-dev libpcre3 libpcre3-dev \
+RUN apt-get install -y build-essential bison flex libpcap-dev libpcre2-dev \
                         libdumbnet-dev zlib1g-dev libnghttp2-dev openssl \
                         libphp-adodb php-pear libwww-perl php-gd git autoconf libtool \
-                        curl unzip cmake liblzma-dev libssl-dev hwloc libhwloc-dev libpcre2-dev
+                        curl unzip cmake liblzma-dev libssl-dev hwloc libhwloc-dev
 
 # FROM the SNORT documentation
 WORKDIR /etc
@@ -62,7 +62,7 @@ RUN mkdir -p /etc/snort/etc/rules /etc/snort/etc/so_rules /etc/snort/etc/lists
 # add oinkcode and execute pulledpork
 ENV OINKCODE=${OINKCODE}
 RUN echo "oinkcode = ${OINKCODE}" >> /etc/snort/pulledpork3/etc/pulledpork.conf
-RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
+# RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
 ENV OINKCODE=empty
 
 
