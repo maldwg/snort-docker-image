@@ -62,8 +62,9 @@ RUN mkdir -p /etc/snort/etc/rules /etc/snort/etc/so_rules /etc/snort/etc/lists
 # add oinkcode and execute pulledpork
 ENV OINKCODE=${OINKCODE}
 RUN echo "oinkcode = ${OINKCODE}" >> /etc/snort/pulledpork3/etc/pulledpork.conf
-# RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
+RUN /etc/snort/pulledpork3/pulledpork.py -c /etc/snort/pulledpork3/etc/pulledpork.conf
 ENV OINKCODE=empty
+RUN sed -i '/^oinkcode = /d' /etc/snort/pulledpork3/etc/pulledpork.conf
 
 
 RUN snort -V || (echo "Snort was not installed successfully! Check correctness of dependencies!" && exit 1)
