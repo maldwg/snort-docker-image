@@ -66,6 +66,10 @@ RUN echo "oinkcode = ${OINKCODE}" >> /etc/snort/pulledpork3/etc/pulledpork.conf
 ENV OINKCODE=empty
 
 
+RUN snort -V || (echo "Snort was not installed successfully! Check correctness of dependencies!" && exit 1)
+
+
+FROM snort AS final
 
 WORKDIR /usr/local/bin
 CMD ["tail", "-f", "/dev/null"]
